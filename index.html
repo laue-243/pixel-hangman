@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pixel Hangman</title>
+<style>
+body { background: #000; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; image-rendering: pixelated; color: #fff; font-family: monospace; }
+canvas { border: 4px solid #333; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+<canvas id="game" width="400" height="500"></canvas>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+const words = ['PIXEL','CANVAS','SNAKE','PONG','FROGGER','ASTEROIDS','TETRIS','PACMAN','MEMORY','SOKOBAN'];
+let word = words[Math.floor(Math.random()*words.length)];
+let guessed = new Set();
+let wrong = 0;
+const maxWrong = 6;
+
+function drawHangman() {
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 4;
+  // Gallows
+  ctx.beginPath();
+  ctx.moveTo(50,400); ctx.lineTo(150,400);
+  ctx.moveTo(100,400); ctx.lineTo(100,100);
+  ctx.lineTo(200,100); ctx.lineTo(200,140);
+  ctx.stroke();
+  if (wrong > 0) { ctx.beginPath(); ctx.arc(200,170,30,0,Math.PI*2); ctx.stroke(); } // head
+  if (wrong > 1) { ctx.beginPath(); ctx.moveTo(200,200); ctx.lineTo(200,280); ctx.stroke(); } // body
+  if (wrong > 2) { ctx.beginPath(); ctx.moveTo(200,220); ctx.lineTo(160,260); ctx.stroke(); } // left arm
+  if (wrong > 3) { ctx.beginPath(); ctx.moveTo(200,220); ctx.lineTo(240,260); ctx.stroke(); } // right arm
+  if (wrong > 4) { ctx.beginPath(); ctx.moveTo(200,280); ctx.lineTo(160,340); ctx.stroke(); } // left leg
+  if (wrong > 5) { ctx.beginPath(); ctx.moveTo(200,280); ctx.lineTo(240,340); ctx.stroke(); } // right leg
+}
+
+function draw() {
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0,0,400,500);
+  drawHangman();
+  ctx.fillStyle = '#0f0';
+  ctx.font = '30px monospace';
+  let display = word.split('').map(l => guessed.has(l) ? l : '_').join(' ');
+  ctx.fillText(display, 50, 450);
+  ctx.fillStyle = '#f00';
+  ctx.font = '16px monospace';
+  ctx.fillText('Wrong: '+wrong+'/'+maxWrong, 10, 30);
+  if (wrong >= maxWrong) {
+    ctx.fillStyle = '#f00';
+    ctx.font = '24px monospace';
+    ctx.fillText('You Lose! Word: '+word, 50, 250);
+  } else if (word.split('').every(l => guessed.has(l))) {
+    ctx.fillStyle = '#0f0';
+    ctx.font = '24px monospace';
+    ctx.fillText('You Win!', 140, 250);
+  }
+}
+
+document.addEventListener('keydown', e => {
+  const letter = e.key.toUpperCase();
+  if (letter.length === 1 && letter >= 'A' && letter <= 'Z' && !guessed.has(letter)) {
+    guessed.add(letter);
+    if (!word.includes(letter)) wrong++;
+    draw();
+  }
+});
+
+draw();
+</script>
+</body>
+</html>
